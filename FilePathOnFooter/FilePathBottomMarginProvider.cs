@@ -18,7 +18,13 @@ public sealed class FilePathBottomMarginProvider : IWpfTextViewMarginProvider
 
     public IWpfTextViewMargin CreateMargin(IWpfTextViewHost wpfTextViewHost, IWpfTextViewMargin marginContainer)
     {
-        if (TextDocumentFactoryService.TryGetTextDocument(wpfTextViewHost.TextView.TextBuffer, out ITextDocument textDocument))
+        var textView = wpfTextViewHost.TextView;
+        var documentBuffer = textView.TextDataModel.DocumentBuffer;
+
+        // Projection views can display a buffer that is not associated with the file.
+        if (TextDocumentFactoryService.TryGetTextDocument(documentBuffer, out ITextDocument textDocument)
+            || (documentBuffer != textView.TextBuffer
+                && TextDocumentFactoryService.TryGetTextDocument(textView.TextBuffer, out textDocument)))
         {
             return new FilePathBottomMargin(textDocument);
         }
